@@ -14,4 +14,5 @@ public class Constants {
     public static final String FIREBASE_ITEMS_URL = FIREBASE_BASE_URL + FIREBASE_LOCATION_BUCKETLIST_ITEMS;
 
     public static final String FIREBASE_TIMESTAMP_PROPERTY = "timestamp";
+    public static final String KEY_ID = "key";
 }
