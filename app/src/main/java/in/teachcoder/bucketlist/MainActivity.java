@@ -2,11 +2,13 @@ package in.teachcoder.bucketlist;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 
@@ -34,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
         Firebase.setAndroidContext(this);
         firebaseRef = new Firebase(Constants.FIREBASE_BASE_URL);
         categoriesRef = new Firebase(Constants.FIREBASE_CATEGORIES_URL);
-
         adapter = new CategoriesListAdapter(this, BucketCategory.class, categoriesRef);
         addCategory.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         categoriesList.setAdapter(adapter);
+        listListener();
     }
 
     public void showDialog() {
@@ -73,5 +75,17 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog categoryDialog = dialogBuilder.create();
         categoryDialog.show();
 
+    }
+
+    public void listListener(){
+        categoriesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String key = adapter.getRef(position).getKey();
+                Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+                intent.putExtra(Constants.KEY_ID,key );
+                startActivity(intent);
+            }
+        });
     }
 }
