@@ -12,10 +12,7 @@
     <ListView
         android:id="@+id/bucketCategoriesList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:columnWidth="120dp"
-        android:numColumns="auto_fit">
-
+        android:layout_height="match_parent">
     </ListView>
 
     <android.support.design.widget.FloatingActionButton
@@ -25,6 +22,5 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:src="@android:drawable/ic_menu_add"
-
         />
 </RelativeLayout>
