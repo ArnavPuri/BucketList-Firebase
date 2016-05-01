@@ -16,25 +16,19 @@ import com.firebase.ui.FirebaseListAdapter;
 public class MainActivity extends AppCompatActivity {
     ListView categoriesList;
     FloatingActionButton addCategory;
-    Firebase firebaseRef, categoriesRef;
-CategoriesListAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         addCategory = (FloatingActionButton) findViewById(R.id.addCategoryBtn);
         categoriesList = (ListView) findViewById(R.id.bucketCategoriesList);
-        Firebase.setAndroidContext(this);
-        firebaseRef = new Firebase(Constants.FIREBASE_BASE_URL);
-        categoriesRef = new Firebase(Constants.FIREBASE_CATEGORIES_URL);
-        adapter = new CategoriesListAdapter(this, String.class,categoriesRef );
+
         addCategory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showDialog();
             }
         });
-        categoriesList.setAdapter(adapter);
     }
 
     public void showDialog(){
@@ -50,10 +44,7 @@ CategoriesListAdapter adapter;
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // send to firebase
-                String category = categoryName.getText().toString();
-                Firebase newRef = categoriesRef.push();
-                String itemId = newRef.getKey();
-                newRef.setValue(category);
+
             }
         });
 
