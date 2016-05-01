@@ -11,13 +11,20 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import com.firebase.client.Firebase;
-import com.firebase.ui.FirebaseListAdapter;
+import com.firebase.client.ServerValue;
+
+import java.util.HashMap;
+import java.util.Objects;
+
+import in.teachcoder.bucketlist.models.BucketCategory;
 
 public class MainActivity extends AppCompatActivity {
     ListView categoriesList;
     FloatingActionButton addCategory;
     Firebase firebaseRef, categoriesRef;
-CategoriesListAdapter adapter;
+    CategoriesListAdapter adapter;
+    String owner;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,7 +34,8 @@ CategoriesListAdapter adapter;
         Firebase.setAndroidContext(this);
         firebaseRef = new Firebase(Constants.FIREBASE_BASE_URL);
         categoriesRef = new Firebase(Constants.FIREBASE_CATEGORIES_URL);
-        adapter = new CategoriesListAdapter(this, String.class,categoriesRef );
+
+        adapter = new CategoriesListAdapter(this, BucketCategory.class, categoriesRef);
         addCategory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -37,7 +45,7 @@ CategoriesListAdapter adapter;
         categoriesList.setAdapter(adapter);
     }
 
-    public void showDialog(){
+    public void showDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.add_category_dialog, null);
@@ -51,9 +59,14 @@ CategoriesListAdapter adapter;
             public void onClick(DialogInterface dialog, int which) {
                 // send to firebase
                 String category = categoryName.getText().toString();
+                owner = "Anon";
                 Firebase newRef = categoriesRef.push();
+                HashMap<String, Object> timeStampCreatedAt = new HashMap<String, Object>();
+                timeStampCreatedAt.put(Constants.FIREBASE_TIMESTAMP_PROPERTY, ServerValue.TIMESTAMP);
+                BucketCategory newCategory = new BucketCategory(owner, category, timeStampCreatedAt);
+
                 String itemId = newRef.getKey();
-                newRef.setValue(category);
+                newRef.setValue(newCategory);
             }
         });
 
