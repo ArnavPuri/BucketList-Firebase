@@ -1,4 +1,4 @@
-package in.teachcoder.bucketlist;
+package in.teachcoder.bucketlist.Activities;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -16,8 +16,10 @@ import com.firebase.client.Firebase;
 import com.firebase.client.ServerValue;
 
 import java.util.HashMap;
-import java.util.Objects;
 
+import in.teachcoder.bucketlist.CategoriesListAdapter;
+import in.teachcoder.bucketlist.Constants;
+import in.teachcoder.bucketlist.R;
 import in.teachcoder.bucketlist.models.BucketCategory;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         addCategory = (FloatingActionButton) findViewById(R.id.addCategoryBtn);
         categoriesList = (ListView) findViewById(R.id.bucketCategoriesList);
-        Firebase.setAndroidContext(this);
+
         firebaseRef = new Firebase(Constants.FIREBASE_BASE_URL);
         categoriesRef = new Firebase(Constants.FIREBASE_CATEGORIES_URL);
         adapter = new CategoriesListAdapter(this, BucketCategory.class, categoriesRef);
