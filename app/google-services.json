@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "549456354128",
+    "project_id": "bucketlist-ba940"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:549456354128:android:7f93407389f41610",
+        "android_client_info": {
+          "package_name": "in.teachcoder.bucketlist"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "549456354128-qo1b7vr7nk0fjlvlthjmnpo5ia2b3vab.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "in.teachcoder.bucketlist",
+            "certificate_hash": "B5770A9B537CAC05F4A01579E23A1162C6180C3F"
+          }
+        },
+        {
+          "client_id": "549456354128-tohcsamitf5hh9l04g5c51ajonobeahp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyFfyMf-MGPlzHwAFzw8c8zIaZRI1Frck"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

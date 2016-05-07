@@ -1,4 +1,4 @@
-package in.teachcoder.bucketlist;
+package in.teachcoder.bucketlist.Activities;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -18,6 +18,8 @@ import com.firebase.client.ValueEventListener;
 
 import java.util.HashMap;
 
+import in.teachcoder.bucketlist.Constants;
+import in.teachcoder.bucketlist.R;
 import in.teachcoder.bucketlist.models.BucketCategory;
 import in.teachcoder.bucketlist.models.BucketCategoryItem;
 
@@ -56,8 +58,6 @@ public class DetailActivity extends AppCompatActivity {
                 showDialog();
             }
         });
-
-
     }
 
     public void showDialog() {
@@ -87,6 +87,7 @@ public class DetailActivity extends AppCompatActivity {
 
         AlertDialog categoryDialog = dialogBuilder.create();
         categoryDialog.show();
+
 
     }
 

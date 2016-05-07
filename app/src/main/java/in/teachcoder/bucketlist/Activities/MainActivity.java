@@ -1,31 +1,43 @@
-package in.teachcoder.bucketlist;
+package in.teachcoder.bucketlist.Activities;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.firebase.client.ServerValue;
+import com.firebase.client.ValueEventListener;
 
 import java.util.HashMap;
-import java.util.Objects;
 
+import in.teachcoder.bucketlist.CategoriesListAdapter;
+import in.teachcoder.bucketlist.Constants;
+import in.teachcoder.bucketlist.R;
 import in.teachcoder.bucketlist.models.BucketCategory;
+import in.teachcoder.bucketlist.models.UserModel;
 
 public class MainActivity extends AppCompatActivity {
     ListView categoriesList;
     FloatingActionButton addCategory;
-    Firebase firebaseRef, categoriesRef;
+    Firebase firebaseRef, categoriesRef, usersRef;
     CategoriesListAdapter adapter;
     String owner;
+    SharedPreferences sp;
+    String mProvider, mEncodedEmail;
+    private ValueEventListener mUserRefListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,9 +45,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         addCategory = (FloatingActionButton) findViewById(R.id.addCategoryBtn);
         categoriesList = (ListView) findViewById(R.id.bucketCategoriesList);
-        Firebase.setAndroidContext(this);
+        sp = PreferenceManager.getDefaultSharedPreferences(this);
+        mEncodedEmail = sp.getString(Constants.KEY_ENCODED_EMAIL, null);
+        mProvider = sp.getString(Constants.KEY_PROVIDER, null);
+
         firebaseRef = new Firebase(Constants.FIREBASE_BASE_URL);
         categoriesRef = new Firebase(Constants.FIREBASE_CATEGORIES_URL);
+        usersRef = new Firebase(Constants.FIREBASE_USER_URL).child(mEncodedEmail);
+        Log.d("MainActivity", usersRef.toString());
         adapter = new CategoriesListAdapter(this, BucketCategory.class, categoriesRef);
         addCategory.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,6 +61,26 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         categoriesList.setAdapter(adapter);
+
+        mUserRefListener = usersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UserModel user = dataSnapshot.getValue(UserModel.class);
+
+                if (user != null){
+                    String firstName = user.getName().split("\\s+")[0];
+                    String title = firstName + "'s Lists";
+                    setTitle(title);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+
         listListener();
     }
 
@@ -61,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 // send to firebase
                 String category = categoryName.getText().toString();
-                owner = "Anon";
+                owner = mEncodedEmail;
                 Firebase newRef = categoriesRef.push();
                 HashMap<String, Object> timeStampCreatedAt = new HashMap<String, Object>();
                 timeStampCreatedAt.put(Constants.FIREBASE_TIMESTAMP_PROPERTY, ServerValue.TIMESTAMP);
@@ -87,5 +124,11 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        usersRef.removeEventListener(mUserRefListener);
     }
 }
