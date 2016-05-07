@@ -47,13 +47,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     TextView signUp;
     String updatedEmailId;
     private Firebase mFirebase;
-
+    private Firebase.AuthStateListener myAuthStateListener;
     GoogleSignInOptions gso;
-    GoogleApiClient googleApiClient;
+    public static GoogleApiClient googleApiClient;
     GoogleSignInAccount googleAccount;
     boolean googleIntentInProgress;
     private static final int RC_SIGN_IN = 1;
     private ProgressDialog authenticationDialog;
+    Firebase.AuthStateListener getMyAuthStateListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +65,27 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         onSignUpPressed();
         Firebase.setAndroidContext(this);
         mFirebase = new Firebase(Constants.FIREBASE_BASE_URL);
-
+        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 //      authentication dialog
         authenticationDialog = new ProgressDialog(this);
         authenticationDialog.setTitle("Loading...");
         authenticationDialog.setMessage("Authenticating with backend");
         authenticationDialog.setCancelable(false);
+
+        getMyAuthStateListener = new Firebase.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(AuthData authData) {
+                if (authData != null) {
+                    SharedPreferences.Editor spe = sp.edit();
+                    spe.putString(Constants.KEY_ENCODED_EMAIL, null);
+                    spe.putString(Constants.KEY_PROVIDER, null);
+
+                }
+            }
+        };
+        mFirebase.addAuthStateListener(getMyAuthStateListener);
+
+
     }
 
     public void initializeViews() {
@@ -282,6 +298,12 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         };
 
         task.execute();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mFirebase.removeAuthStateListener(getMyAuthStateListener);
     }
 }
 

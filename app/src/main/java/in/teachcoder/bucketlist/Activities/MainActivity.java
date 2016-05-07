@@ -10,16 +10,26 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.firebase.client.AuthData;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ServerValue;
 import com.firebase.client.ValueEventListener;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 
 import java.util.HashMap;
 
@@ -29,7 +39,7 @@ import in.teachcoder.bucketlist.R;
 import in.teachcoder.bucketlist.models.BucketCategory;
 import in.teachcoder.bucketlist.models.UserModel;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     ListView categoriesList;
     FloatingActionButton addCategory;
     Firebase firebaseRef, categoriesRef, usersRef;
@@ -38,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sp;
     String mProvider, mEncodedEmail;
     private ValueEventListener mUserRefListener;
+    GoogleApiClient googleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +72,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         categoriesList.setAdapter(adapter);
-
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage( this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API,gso)
+                .build();
         mUserRefListener = usersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -127,8 +144,52 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.logout_menu){
+            logout();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void logout() {
+        if (mProvider != null){
+            firebaseRef.unauth();
+
+            if (mProvider.equals(Constants.GOOGLE_PROVIDER)){
+
+                Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(
+                        new ResultCallback<Status>() {
+                            @Override
+                            public void onResult(Status status) {
+
+                            }
+                        }
+                );
+            }
+            Intent startIntent = new Intent(this, LoginActivity.class);
+            startIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(startIntent);
+        }
+
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         usersRef.removeEventListener(mUserRefListener);
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 }
