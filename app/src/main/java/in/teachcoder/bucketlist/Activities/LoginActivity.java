@@ -2,8 +2,10 @@ package in.teachcoder.bucketlist.Activities;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -13,8 +15,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.client.AuthData;
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.ServerValue;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -28,9 +33,11 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import in.teachcoder.bucketlist.Constants;
 import in.teachcoder.bucketlist.R;
+import in.teachcoder.bucketlist.models.UserModel;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -38,6 +45,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     SignInButton googleSignInBtn;
     Button signIn;
     TextView signUp;
+    String updatedEmailId;
     private Firebase mFirebase;
 
     GoogleSignInOptions gso;
@@ -53,6 +61,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         setContentView(R.layout.activity_login);
         initializeViews();
         setupGoogleSignIn();
+        onSignUpPressed();
         Firebase.setAndroidContext(this);
         mFirebase = new Firebase(Constants.FIREBASE_BASE_URL);
 
@@ -93,8 +102,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
     public void onSignUpPressed() {
-        Intent i = new Intent(this, CreateAccountActivity.class);
-        startActivity(i);
+        signUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(LoginActivity.this, CreateAccountActivity.class);
+                startActivity(i);
+            }
+        });
+
     }
 
     public void setupGoogleSignIn() {
@@ -124,7 +139,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-
+        authenticationDialog.dismiss();
     }
 
     @Override
@@ -158,9 +173,56 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         @Override
         public void onAuthenticated(AuthData authData) {
             if (authData != null) {
+                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+                SharedPreferences.Editor spe = sp.edit();
+
+                final String emailId;
+                if (authData.getProvider().equals(Constants.PASSWORD_PROVIDER)) {
+                    emailId = authData.getProviderData().get(Constants.FIREBASE_PROPERTY_EMAIL).toString().toLowerCase();
+                    updatedEmailId = Constants.updateEmail(emailId);
+                } else if (authData.getProvider().equals(Constants.GOOGLE_PROVIDER)) {
+
+
+                    if (googleApiClient.isConnected()) {
+                        emailId = googleAccount.getEmail().toLowerCase();
+                        spe.putString(Constants.GOOGLE_ID, emailId).apply();
+                    } else {
+                        emailId = sp.getString(Constants.GOOGLE_ID, null);
+
+                    }
+                    updatedEmailId = Constants.updateEmail(emailId);
+
+
+                    final String userName = (String) authData.getProviderData().get("displayName");
+
+                    final Firebase usersRef = new Firebase(Constants.FIREBASE_USER_URL).child(updatedEmailId);
+                    usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.getValue() == null) {
+                                HashMap<String, Object> timeJoined = new HashMap<String, Object>();
+                                timeJoined.put(Constants.FIREBASE_TIMESTAMP_PROPERTY, ServerValue.TIMESTAMP);
+
+                                UserModel newUser = new UserModel(userName, updatedEmailId, timeJoined);
+                                usersRef.setValue(newUser);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(FirebaseError firebaseError) {
+
+                        }
+                    });
+
+                }
+                spe.putString(Constants.KEY_PROVIDER, authData.getProvider()).apply();
+                spe.putString(Constants.KEY_ENCODED_EMAIL, updatedEmailId).apply();
+                spe.commit();
+
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
+                authenticationDialog.dismiss();
                 finish();
             }
         }
@@ -168,6 +230,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         @Override
         public void onAuthenticationError(FirebaseError firebaseError) {
             userEmail.setError(firebaseError.getMessage());
+            authenticationDialog.dismiss();
         }
     }
 

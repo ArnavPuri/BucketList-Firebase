@@ -63,11 +63,4 @@
             android:text="Sign In"
             android:textColor="@android:color/black" />
     </LinearLayout>
-
-    <com.google.android.gms.common.SignInButton
-        android:id="@+id/login_with_google"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true" />
 </RelativeLayout>
