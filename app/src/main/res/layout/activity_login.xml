@@ -54,10 +54,10 @@
             android:text="Create a new account" />
 
         <TextView
-            android:id="@+id/tv_sign_in"
+            android:id="@+id/tv_sign_up"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sign In"
+            android:text="Sign Up"
             android:textColor="@android:color/black" />
     </LinearLayout>
 

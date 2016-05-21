@@ -53,6 +53,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         setContentView(R.layout.activity_login);
         initializeViews();
         setupGoogleSignIn();
+        onSignUpPressed();
         Firebase.setAndroidContext(this);
         mFirebase = new Firebase(Constants.FIREBASE_BASE_URL);
 
@@ -68,7 +69,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         password = (TextInputEditText) findViewById(R.id.user_pass_input);
         signIn = (Button) findViewById(R.id.sign_in_button);
         googleSignInBtn = (SignInButton) findViewById(R.id.login_with_google);
-        signUp = (TextView) findViewById(R.id.tv_sign_in);
+        signUp = (TextView) findViewById(R.id.tv_sign_up);
         signIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -83,6 +84,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         });
 
     }
+
+
 
     public void onSignInPressed() {
         Log.d("LoginActivity", "google login pressed");
