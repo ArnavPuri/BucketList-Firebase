@@ -2,10 +2,14 @@ package in.teachcoder.bucketlist.Activities;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -29,6 +33,7 @@ public class DetailActivity extends AppCompatActivity {
     Firebase activeCategoryListRef, itemsRef;
     String owner;
     ValueEventListener eventListener;
+    SharedPreferences sp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,14 +72,14 @@ public class DetailActivity extends AppCompatActivity {
         dialogBuilder.setView(dialogView);
         final EditText itemName = (EditText) dialogView.findViewById(R.id.category_name_input);
 
-        dialogBuilder.setTitle("Add a item");
-        dialogBuilder.setMessage("Enter your Item name");
-        dialogBuilder.setPositiveButton("Add Item", new DialogInterface.OnClickListener() {
+        dialogBuilder.setTitle("Edit name");
+        dialogBuilder.setMessage("Edit your Item name");
+        dialogBuilder.setPositiveButton("Edit Item", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // send to firebase
                 String item = itemName.getText().toString();
-                owner = "Anon";
+                owner = sp.getString(Constants.KEY_ENCODED_EMAIL,null);
                 Firebase newRef = itemsRef.push();
                 HashMap<String, Object> timeStampCreatedAt = new HashMap<String, Object>();
                 timeStampCreatedAt.put(Constants.FIREBASE_TIMESTAMP_PROPERTY, ServerValue.TIMESTAMP);
@@ -102,4 +107,22 @@ public class DetailActivity extends AppCompatActivity {
         addBucketItem = (FloatingActionButton) findViewById(R.id.addbucketItemBtn);
         itemsList = (ListView) findViewById(R.id.bucketItemsList);
     }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.detail_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return super.onOptionsItemSelected(item);
+
+    }
+
+
+
 }

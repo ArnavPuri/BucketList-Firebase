@@ -303,7 +303,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mFirebase.removeAuthStateListener(getMyAuthStateListener);
+//        mFirebase.removeAuthStateListener(myAuthStateListener);
     }
 }
-
