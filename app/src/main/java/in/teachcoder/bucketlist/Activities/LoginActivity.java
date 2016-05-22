@@ -39,7 +39,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     Button signIn;
     TextView signUp;
     private Firebase mFirebase;
-
     GoogleSignInOptions gso;
     GoogleApiClient googleApiClient;
     GoogleSignInAccount googleAccount;
@@ -53,7 +52,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         setContentView(R.layout.activity_login);
         initializeViews();
         setupGoogleSignIn();
-        onSignUpPressed();
+
         Firebase.setAndroidContext(this);
         mFirebase = new Firebase(Constants.FIREBASE_BASE_URL);
 
@@ -62,18 +61,10 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         authenticationDialog.setTitle("Loading...");
         authenticationDialog.setMessage("Authenticating with backend");
         authenticationDialog.setCancelable(false);
-    }
-
-    public void initializeViews() {
-        userEmail = (TextInputEditText) findViewById(R.id.user_email_input);
-        password = (TextInputEditText) findViewById(R.id.user_pass_input);
-        signIn = (Button) findViewById(R.id.sign_in_button);
-        googleSignInBtn = (SignInButton) findViewById(R.id.login_with_google);
-        signUp = (TextView) findViewById(R.id.tv_sign_up);
-        signIn.setOnClickListener(new View.OnClickListener() {
+        signUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onSignInPressed();
+                onSignUpPressed();
             }
         });
         googleSignInBtn.setOnClickListener(new View.OnClickListener() {
@@ -82,9 +73,24 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 signInWithGoogleButton();
             }
         });
-
+        signIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSignInPressed();
+            }
+        });
     }
 
+    public void initializeViews() {
+        userEmail = (TextInputEditText) findViewById(R.id.user_email_input);
+        password = (TextInputEditText) findViewById(R.id.user_pass_input);
+        signIn = (Button) findViewById(R.id.sign_in_button);
+        googleSignInBtn = (SignInButton) findViewById(R.id.login_with_google);
+        signUp = (TextView) findViewById(R.id.tv_sign_up);
+
+
+
+    }
 
 
     public void onSignInPressed() {
