@@ -1,12 +1,12 @@
 package in.teachcoder.bucketlist.Activities;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -52,39 +52,13 @@ public class MainActivity extends AppCompatActivity {
 
         firebaseRef = new Firebase(Constants.FIREBASE_BASE_URL);
         categoriesRef = new Firebase(Constants.FIREBASE_CATEGORIES_URL);
-        usersRef = new Firebase(Constants.FIREBASE_USER_URL).child(mEncodedEmail);
-        Log.d("MainActivity pre", usersRef.toString());
-
-
-        categoriesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        Query userQuery = categoriesRef.child("owner").equalTo(mEncodedEmail);
+        userQuery.getRef();
+        userQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    String key = child.getKey();
-                    Query whichUser = categoriesRef.child(key).orderByChild("owner").equalTo("Anon");
-                    whichUser.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            
-                        }
-
-                        @Override
-                        public void onCancelled(FirebaseError firebaseError) {
-
-                        }
-                    });
-//                    Firebase ref = categoriesRef.child(key).child("owner");
-//                    ref.addValueEventListener(new ValueEventListener() {
-//                        @Override
-//                        public void onDataChange(DataSnapshot dataSnapshot) {
-//                            Log.d("MainActivity userQuery", dataSnapshot.getValue().toString());
-//                        }
-//
-//                        @Override
-//                        public void onCancelled(FirebaseError firebaseError) {
-//
-//                        }
-//                    });
+                if (dataSnapshot != null) {
+                    Firebase= dataSnapshot.getValue(BucketCategory.class);
                 }
             }
 
@@ -93,8 +67,49 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        usersRef = new Firebase(Constants.FIREBASE_USER_URL).child(mEncodedEmail);
+        Log.d("MainActivity query", queryRef.toString());
 
-        adapter = new CategoriesListAdapter(this, BucketCategory.class, categoriesRef);
+
+//        categoriesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                for (DataSnapshot child : dataSnapshot.getChildren()) {
+//                    String key = child.getKey();
+//                    Query whichUser = categoriesRef.child(key).orderByChild("owner").equalTo("Anon");
+//                    whichUser.addValueEventListener(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onCancelled(FirebaseError firebaseError) {
+//
+//                        }
+//                    });
+////                    Firebase ref = categoriesRef.child(key).child("owner");
+////                    ref.addValueEventListener(new ValueEventListener() {
+////                        @Override
+////                        public void onDataChange(DataSnapshot dataSnapshot) {
+////                            Log.d("MainActivity userQuery", dataSnapshot.getValue().toString());
+////                        }
+////
+////                        @Override
+////                        public void onCancelled(FirebaseError firebaseError) {
+////
+////                        }
+////                    });
+//    }
+
+
+//    @Override
+//    public void onCancelled(FirebaseError firebaseError) {
+//
+//    }
+//});
+
+        adapter = new CategoriesListAdapter(this, BucketCategory.class, queryRef);
 
         addCategory.setOnClickListener(new View.OnClickListener() {
                                            @Override
