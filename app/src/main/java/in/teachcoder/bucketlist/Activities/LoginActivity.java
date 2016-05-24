@@ -175,26 +175,19 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             if (authData != null) {
                 SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
                 SharedPreferences.Editor spe = sp.edit();
-
                 final String emailId;
                 if (authData.getProvider().equals(Constants.PASSWORD_PROVIDER)) {
                     emailId = authData.getProviderData().get(Constants.FIREBASE_PROPERTY_EMAIL).toString().toLowerCase();
                     updatedEmailId = Constants.updateEmail(emailId);
                 } else if (authData.getProvider().equals(Constants.GOOGLE_PROVIDER)) {
-
-
                     if (googleApiClient.isConnected()) {
                         emailId = googleAccount.getEmail().toLowerCase();
                         spe.putString(Constants.GOOGLE_ID, emailId).apply();
                     } else {
                         emailId = sp.getString(Constants.GOOGLE_ID, null);
-
                     }
                     updatedEmailId = Constants.updateEmail(emailId);
-
-
                     final String userName = (String) authData.getProviderData().get("displayName");
-
                     final Firebase usersRef = new Firebase(Constants.FIREBASE_USER_URL).child(updatedEmailId);
                     usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -207,17 +200,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                                 usersRef.setValue(newUser);
                             }
                         }
-
                         @Override
                         public void onCancelled(FirebaseError firebaseError) {
-
                         }
                     });
-
                 }
                 spe.putString(Constants.KEY_PROVIDER, authData.getProvider()).apply();
                 spe.putString(Constants.KEY_ENCODED_EMAIL, updatedEmailId).apply();
-                spe.commit();
+                spe.apply();
 
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

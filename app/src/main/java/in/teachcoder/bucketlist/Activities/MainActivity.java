@@ -18,6 +18,7 @@ import android.widget.ListView;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
 import com.firebase.client.ServerValue;
 import com.firebase.client.ValueEventListener;
 
@@ -52,26 +53,38 @@ public class MainActivity extends AppCompatActivity {
         firebaseRef = new Firebase(Constants.FIREBASE_BASE_URL);
         categoriesRef = new Firebase(Constants.FIREBASE_CATEGORIES_URL);
         usersRef = new Firebase(Constants.FIREBASE_USER_URL).child(mEncodedEmail);
-        Log.d("MainActivity", usersRef.toString());
-        adapter = new CategoriesListAdapter(this, BucketCategory.class, categoriesRef);
-        addCategory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDialog();
-            }
-        });
-        categoriesList.setAdapter(adapter);
+        Log.d("MainActivity pre", usersRef.toString());
 
-        mUserRefListener = usersRef.addValueEventListener(new ValueEventListener() {
+
+        categoriesRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                UserModel user = dataSnapshot.getValue(UserModel.class);
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    String key = child.getKey();
+                    Query whichUser = categoriesRef.child(key).orderByChild("owner").equalTo("Anon");
+                    whichUser.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            
+                        }
 
-                if (user != null){
-                    String firstName = user.getName().split("\\s+")[0];
-                    String title = firstName + "'s Lists";
-                    setTitle(title);
+                        @Override
+                        public void onCancelled(FirebaseError firebaseError) {
 
+                        }
+                    });
+//                    Firebase ref = categoriesRef.child(key).child("owner");
+//                    ref.addValueEventListener(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(DataSnapshot dataSnapshot) {
+//                            Log.d("MainActivity userQuery", dataSnapshot.getValue().toString());
+//                        }
+//
+//                        @Override
+//                        public void onCancelled(FirebaseError firebaseError) {
+//
+//                        }
+//                    });
                 }
             }
 
@@ -80,6 +93,40 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        adapter = new CategoriesListAdapter(this, BucketCategory.class, categoriesRef);
+
+        addCategory.setOnClickListener(new View.OnClickListener() {
+                                           @Override
+                                           public void onClick(View v) {
+                                               showDialog();
+                                           }
+                                       }
+
+        );
+        categoriesList.setAdapter(adapter);
+
+        mUserRefListener = usersRef.addValueEventListener(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        UserModel user = dataSnapshot.getValue(UserModel.class);
+
+                        if (user != null) {
+                            String firstName = user.getName().split("\\s+")[0];
+                            String title = firstName + "'s Lists";
+                            setTitle(title);
+
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(FirebaseError firebaseError) {
+
+                    }
+                }
+
+        );
 
         listListener();
     }
@@ -114,13 +161,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void listListener(){
+    public void listListener() {
         categoriesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String key = adapter.getRef(position).getKey();
                 Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-                intent.putExtra(Constants.KEY_ID,key );
+                intent.putExtra(Constants.KEY_ID, key);
                 startActivity(intent);
             }
         });
