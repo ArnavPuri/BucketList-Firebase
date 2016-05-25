@@ -47,7 +47,13 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     TextView signUp;
     String updatedEmailId;
     private Firebase mFirebase;
+<<<<<<< HEAD
     private Firebase.AuthStateListener myAuthStateListener;
+=======
+    private SharedPreferences mSharedPreferences;
+    private SharedPreferences.Editor mSPEditor;
+    private Firebase.AuthStateListener mAuthStateListener;
+>>>>>>> 1c5b48e... added presume login session
     GoogleSignInOptions gso;
     public static GoogleApiClient googleApiClient;
     GoogleSignInAccount googleAccount;
@@ -65,7 +71,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         onSignUpPressed();
         Firebase.setAndroidContext(this);
         mFirebase = new Firebase(Constants.FIREBASE_BASE_URL);
+<<<<<<< HEAD
         final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+=======
+
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mSPEditor = mSharedPreferences.edit();
+
+>>>>>>> 1c5b48e... added presume login session
 //      authentication dialog
         authenticationDialog = new ProgressDialog(this);
         authenticationDialog.setTitle("Loading...");
@@ -189,8 +202,11 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         @Override
         public void onAuthenticated(AuthData authData) {
             if (authData != null) {
+<<<<<<< HEAD
                 SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
                 SharedPreferences.Editor spe = sp.edit();
+=======
+>>>>>>> 1c5b48e... added presume login session
 
                 final String emailId;
                 if (authData.getProvider().equals(Constants.PASSWORD_PROVIDER)) {
@@ -201,10 +217,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
                     if (googleApiClient.isConnected()) {
                         emailId = googleAccount.getEmail().toLowerCase();
-                        spe.putString(Constants.GOOGLE_ID, emailId).apply();
+                        mSPEditor.putString(Constants.GOOGLE_ID, emailId).apply();
                     } else {
+<<<<<<< HEAD
                         emailId = sp.getString(Constants.GOOGLE_ID, null);
 
+=======
+                        emailId = mSharedPreferences.getString(Constants.GOOGLE_ID, null);
+>>>>>>> 1c5b48e... added presume login session
                     }
                     updatedEmailId = Constants.updateEmail(emailId);
 
@@ -231,9 +251,15 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                     });
 
                 }
+<<<<<<< HEAD
                 spe.putString(Constants.KEY_PROVIDER, authData.getProvider()).apply();
                 spe.putString(Constants.KEY_ENCODED_EMAIL, updatedEmailId).apply();
                 spe.commit();
+=======
+                mSPEditor.putString(Constants.KEY_PROVIDER, authData.getProvider()).apply();
+                mSPEditor.putString(Constants.KEY_ENCODED_EMAIL, updatedEmailId).apply();
+                mSPEditor.apply();
+>>>>>>> 1c5b48e... added presume login session
 
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -301,9 +327,33 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
     @Override
+<<<<<<< HEAD
     protected void onDestroy() {
         super.onDestroy();
         mFirebase.removeAuthStateListener(getMyAuthStateListener);
+=======
+    protected void onResume() {
+        super.onResume();
+        mAuthStateListener = new Firebase.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(AuthData authData) {
+                authenticationDialog.dismiss();
+                if (authData != null) {
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+        };
+        mFirebase.addAuthStateListener(mAuthStateListener);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mFirebase.removeAuthStateListener(mAuthStateListener);
+>>>>>>> 1c5b48e... added presume login session
     }
 }
 
