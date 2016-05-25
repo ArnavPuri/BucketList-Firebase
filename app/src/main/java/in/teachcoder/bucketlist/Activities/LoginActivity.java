@@ -47,7 +47,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     TextView signUp;
     String updatedEmailId;
     private Firebase mFirebase;
-
+    private SharedPreferences mSharedPreferences;
+    private SharedPreferences.Editor mSPEditor;
+    private Firebase.AuthStateListener mAuthStateListener;
     GoogleSignInOptions gso;
     GoogleApiClient googleApiClient;
     GoogleSignInAccount googleAccount;
@@ -64,6 +66,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         onSignUpPressed();
         Firebase.setAndroidContext(this);
         mFirebase = new Firebase(Constants.FIREBASE_BASE_URL);
+
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mSPEditor = mSharedPreferences.edit();
 
 //      authentication dialog
         authenticationDialog = new ProgressDialog(this);
@@ -173,8 +178,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         @Override
         public void onAuthenticated(AuthData authData) {
             if (authData != null) {
-                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
-                SharedPreferences.Editor spe = sp.edit();
+
                 final String emailId;
                 if (authData.getProvider().equals(Constants.PASSWORD_PROVIDER)) {
                     emailId = authData.getProviderData().get(Constants.FIREBASE_PROPERTY_EMAIL).toString().toLowerCase();
@@ -182,9 +186,9 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 } else if (authData.getProvider().equals(Constants.GOOGLE_PROVIDER)) {
                     if (googleApiClient.isConnected()) {
                         emailId = googleAccount.getEmail().toLowerCase();
-                        spe.putString(Constants.GOOGLE_ID, emailId).apply();
+                        mSPEditor.putString(Constants.GOOGLE_ID, emailId).apply();
                     } else {
-                        emailId = sp.getString(Constants.GOOGLE_ID, null);
+                        emailId = mSharedPreferences.getString(Constants.GOOGLE_ID, null);
                     }
                     updatedEmailId = Constants.updateEmail(emailId);
                     final String userName = (String) authData.getProviderData().get("displayName");
@@ -200,14 +204,15 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                                 usersRef.setValue(newUser);
                             }
                         }
+
                         @Override
                         public void onCancelled(FirebaseError firebaseError) {
                         }
                     });
                 }
-                spe.putString(Constants.KEY_PROVIDER, authData.getProvider()).apply();
-                spe.putString(Constants.KEY_ENCODED_EMAIL, updatedEmailId).apply();
-                spe.apply();
+                mSPEditor.putString(Constants.KEY_PROVIDER, authData.getProvider()).apply();
+                mSPEditor.putString(Constants.KEY_ENCODED_EMAIL, updatedEmailId).apply();
+                mSPEditor.apply();
 
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -272,6 +277,30 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         };
 
         task.execute();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mAuthStateListener = new Firebase.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(AuthData authData) {
+                authenticationDialog.dismiss();
+                if (authData != null) {
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+        };
+        mFirebase.addAuthStateListener(mAuthStateListener);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mFirebase.removeAuthStateListener(mAuthStateListener);
     }
 }
 
